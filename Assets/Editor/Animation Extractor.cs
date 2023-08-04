@@ -17,6 +17,22 @@ public class AnimationExtractor
             var childAssets = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GetAssetPath(gameObject));
             EditorUtility.DisplayProgressBar("提取动画片段", path, progressIndex / (gameObjects.Length * 1f));
 
+            ModelImporter importer = AssetImporter.GetAtPath(path) as ModelImporter;
+            if (importer != null)
+            {
+                var clip = importer.defaultClipAnimations[0];
+                clip.keepOriginalOrientation = true;
+                clip.keepOriginalPositionXZ = true;
+                clip.keepOriginalPositionY = true;
+                var clips = new ModelImporterClipAnimation[1] { clip };
+                importer.clipAnimations = clips;
+                importer.SaveAndReimport();
+            }
+            else
+            {
+                Debug.LogError($"Failed to get ModelImporter for {path}");
+            }
+
             foreach (var childAsset in childAssets)
             {
                 if (childAsset is AnimationClip && !childAsset.name.Contains("__preview__"))
